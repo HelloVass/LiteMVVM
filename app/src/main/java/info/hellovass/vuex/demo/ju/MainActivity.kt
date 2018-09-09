@@ -1,15 +1,18 @@
 package info.hellovass.vuex.demo.ju
 
 import android.arch.lifecycle.Observer
-import android.arch.lifecycle.ViewModelProviders
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
-import android.support.v7.widget.DefaultItemAnimator
 import android.support.v7.widget.LinearLayoutManager
+import android.support.v7.widget.RecyclerView
 import info.hellovass.vuex.demo.R
 import info.hellovass.vuex.demo.betteradapter.BetterAdapter
 import info.hellovass.vuex.demo.betteradapter.visitor.JuVistor
+import info.hellovass.vuex.demo.ext.obtainVM
+import info.hellovass.vuex.demo.model.FooterStateModel
 import info.hellovass.vuex.demo.model.JuVM
+import info.hellovass.vuex.library.loadmore.ILoadMore
+import info.hellovass.vuex.library.loadmore.LoadMore
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
@@ -18,46 +21,70 @@ class MainActivity : AppCompatActivity() {
 
     private var viewAdapter: BetterAdapter? = null
 
+    private var iLoadMore: ILoadMore? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // create ViewModel
-        vm = obtainVM()
+        // create VM
+        vm = obtainVM(JuVM::class.java)
 
-        initRefreshComponent()
+        // init Recyclerview
+        initRecyclerViewComponent(rcvList)
 
-        // init List Component
-        initRecyclerViewComponent()
+        // init loadMore
+        initLoadMoreComponent(rcvList)
 
-        // load data
+        // 观察 VM 中的 state
+        observeVMState(vm)
+
+        // 加载第一页
         vm?.loadData()
     }
 
-    private fun obtainVM() = ViewModelProviders.of(this).get(JuVM::class.java)
+    private fun initRecyclerViewComponent(recyclerView: RecyclerView) {
 
-    private fun initRefreshComponent() {
-
-    }
-
-    private fun initRecyclerViewComponent() {
-
-        rcvList.apply {
+        recyclerView.apply {
             // set layoutManager
             layoutManager = LinearLayoutManager(this@MainActivity)
-            // set Animator
-            itemAnimator = DefaultItemAnimator()
             // set adapter
             viewAdapter = BetterAdapter(arrayListOf(), JuVistor())
             adapter = viewAdapter
         }
+    }
+
+    private fun initLoadMoreComponent(rcvList: RecyclerView) {
+
+        iLoadMore = LoadMore.Builder(this)
+                .recyclerView(rcvList)
+                .loadMoreListener { vm?.loadData() }
+                .build()
+    }
+
+    private fun observeVMState(vm: JuVM?) {
 
         vm?.let { juVM ->
-            juVM.juDiffResult().observe(this, Observer { juDiffResult ->
-                juDiffResult?.let { pair ->
-                    viewAdapter?.apply {
-                        setItems(pair.first)
-                        pair.second!!.dispatchUpdatesTo(this)
+            juVM.getUIStateModel().observe(this, Observer { uiStateModel ->
+                uiStateModel?.let { it ->
+                    viewAdapter!!.setItems(it.latest)
+                    it.diffResult!!.dispatchUpdatesTo(viewAdapter!!)
+                }
+            })
+        }
+
+        vm?.let { juVM ->
+            juVM.getFooterStateModel().observe(this, Observer { footerStateModel ->
+                footerStateModel?.let { it ->
+                    when (it.status) {
+                        FooterStateModel.Status.Loading ->
+                            iLoadMore?.onLoadMoreBegin()
+                        FooterStateModel.Status.NoMore ->
+                            iLoadMore?.onLoadMoreSucceed(false)
+                        FooterStateModel.Status.Completed ->
+                            iLoadMore?.onLoadMoreSucceed(true)
+                        FooterStateModel.Status.Failed ->
+                            iLoadMore?.onLoadMoreFailed()
                     }
                 }
             })

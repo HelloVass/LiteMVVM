@@ -4,25 +4,22 @@ import io.reactivex.Observable
 
 class JuRepo {
 
-    companion object {
-        const val COUNT = 10
-    }
-
-    fun getJus(): Observable<List<Ju>> {
+    fun getJus(page: Int): Observable<List<Ju>> {
 
         return Observable.create<List<Ju>> { emitter ->
-            emitter.onNext(mockJus())
+            emitter.onNext(mockJus(page))
             emitter.onComplete()
         }
     }
 
-    private fun mockJus(): List<Ju> =
-            with(arrayListOf<Ju>()) {
-                for (index in 1..COUNT) {
-                    add(newJu(index))
-                }
-                this
-            }
+    private fun mockJus(page: Int): List<Ju> {
+
+        val result = arrayListOf<Ju>()
+        for (item in 10 * (page - 1)..(10 * page - 1)) {
+            result.add(newJu(item))
+        }
+        return result
+    }
 
     private fun newJu(index: Int): Ju = Ju(index, "标题=>$index")
 }

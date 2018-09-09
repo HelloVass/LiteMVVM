@@ -2,35 +2,50 @@ package info.hellovass.vuex.demo.model
 
 import android.arch.lifecycle.MutableLiveData
 import android.arch.lifecycle.ViewModel
-import android.support.v7.util.DiffUtil
-import info.hellovass.vuex.demo.ju.JuDiffCallback
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
+import java.util.ArrayList
 
 class JuVM : ViewModel() {
 
-    private val _jusDiffResult = MutableLiveData<Pair<List<Ju>, DiffUtil.DiffResult?>>()
+    private val uiStateModel = MutableLiveData<UIStateModel>()
+
+    private val footerStateModel = MutableLiveData<FooterStateModel>()
 
     private val repo: JuRepo = JuRepo()
 
-    fun juDiffResult() = _jusDiffResult
+    private val juList = arrayListOf<Ju>()
+
+    private var pageNum: Int = 1
+
+    fun getUIStateModel() = uiStateModel
+
+    fun getFooterStateModel() = footerStateModel
 
     fun loadData() {
 
-        val emptyJus = emptyList<Ju>()
+        footerStateModel.postValue(FooterStateModel.loading())
 
-        val initialValue = Pair(emptyJus, null)
-
-        repo.getJus()
-                .scan<Pair<List<Ju>, DiffUtil.DiffResult?>>(initialValue) { pair, next ->
-
-                    val callback = JuDiffCallback(pair.first, next)
-                    val diffResult = DiffUtil.calculateDiff(callback)
-                    Pair(next, diffResult)
+        repo.getJus(pageNum)
+                .map { it ->
+                    // cur
+                    val cur = ArrayList(this.juList)
+                    // add
+                    this.juList.addAll(it)
+                    // next
+                    val next = ArrayList(this.juList)
+                    // result
+                    UIStateModel.success(cur, next)
                 }
-                .skip(1)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe { it -> _jusDiffResult.value = it }
+                .subscribe({ it ->
+                    uiStateModel.value = it
+                    footerStateModel.value = FooterStateModel.succeed(it.itemCount())
+                    pageNum++
+                }, { _ ->
+                    footerStateModel.value = FooterStateModel.failed()
+                })
     }
 }
+
