@@ -7,6 +7,4 @@ interface ILoadMore {
     fun onLoadMoreSucceed(hasMoreItems: Boolean)
 
     fun onLoadMoreFailed()
-
-    fun resetLoadMore()
 }

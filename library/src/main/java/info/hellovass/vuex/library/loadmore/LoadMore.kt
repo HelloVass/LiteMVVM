@@ -93,14 +93,6 @@ class LoadMore(private val context: Context,
         loadMoreWrapper.notifyStatusChanged(Status.Error)
     }
 
-    override fun resetLoadMore() {
-
-        isFailed = false
-        isLoading = false
-        hasMore = true
-        loadMoreWrapper.notifyStatusChanged(Status.Completed)
-    }
-
     class Builder(val context: Context) {
 
         lateinit var recyclerView: RecyclerView
