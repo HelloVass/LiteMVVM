@@ -20,11 +20,11 @@ data class FooterStateModel(val status: Status) {
         /**
          * 加载成功
          */
-        fun succeed(pageSize: Int): FooterStateModel {
-            return if (pageSize >= 10)
-                FooterStateModel(Status.Completed)
-            else
+        fun succeed(hasMore: Boolean): FooterStateModel {
+            return if (!hasMore)
                 FooterStateModel(status = Status.NoMore)
+            else
+                FooterStateModel(status = Status.Completed)
         }
 
         /**

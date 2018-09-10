@@ -2,6 +2,7 @@ package info.hellovass.vuex.demo.ju
 
 import android.arch.lifecycle.Observer
 import android.os.Bundle
+import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
@@ -33,14 +34,17 @@ class MainActivity : AppCompatActivity() {
         // init Recyclerview
         initRecyclerViewComponent(rcvList)
 
-        // init loadMore
-        initLoadMoreComponent(rcvList)
+        // init refresh component
+        initRefreshComponent(refreshLayout)
+
+        // init loadMore component
+        initLoadMoreComponent(refreshLayout, rcvList)
 
         // 观察 VM 中的 state
         observeVMState(vm)
 
         // 加载第一页
-        vm?.loadData()
+        vm?.loadData(false)
     }
 
     private fun initRecyclerViewComponent(recyclerView: RecyclerView) {
@@ -54,11 +58,22 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun initLoadMoreComponent(rcvList: RecyclerView) {
+    private fun initRefreshComponent(refreshLayout: SwipeRefreshLayout) {
+
+        refreshLayout.apply {
+            setOnRefreshListener { vm?.loadData(true) }
+        }
+    }
+
+    private fun initLoadMoreComponent(refreshLayout: SwipeRefreshLayout, rcvList: RecyclerView) {
 
         iLoadMore = LoadMore.Builder(this)
                 .recyclerView(rcvList)
-                .loadMoreListener { vm?.loadData() }
+                .loadMoreListener {
+                    if (!refreshLayout.isRefreshing) {
+                        vm?.loadData(false)
+                    }
+                }
                 .build()
     }
 
@@ -69,6 +84,14 @@ class MainActivity : AppCompatActivity() {
                 uiStateModel?.let { it ->
                     viewAdapter!!.setItems(it.latest)
                     it.diffResult!!.dispatchUpdatesTo(viewAdapter!!)
+                }
+            })
+        }
+
+        vm?.let { juVM ->
+            juVM.getRefreshStateModel().observe(this, Observer { refreshStateModel ->
+                refreshStateModel?.let { it ->
+                    refreshLayout.isRefreshing = it.isRefreshing
                 }
             })
         }
