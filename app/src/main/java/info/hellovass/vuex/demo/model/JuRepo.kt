@@ -1,24 +1,27 @@
 package info.hellovass.vuex.demo.model
 
 import io.reactivex.Observable
+import java.util.concurrent.TimeUnit
 
 class JuRepo {
 
-    fun getJus(page: Int): Observable<List<Ju>> {
+    private val dataSource = arrayListOf<Ju>()
 
-        return Observable.create<List<Ju>> { emitter ->
-            emitter.onNext(mockJus(page))
-            emitter.onComplete()
+    init {
+        for (item in 0..100) {
+            dataSource.add(newJu(item))
         }
     }
 
-    private fun mockJus(page: Int): List<Ju> {
+    fun getJus(page: Int): Observable<List<Ju>> {
 
-        val result = arrayListOf<Ju>()
-        for (item in 10 * (page - 1)..(10 * page - 1)) {
-            result.add(newJu(item))
-        }
-        return result
+        return Observable.timer(800, TimeUnit.MILLISECONDS)
+                .map { _ -> mockFetch(page) }
+    }
+
+    private fun mockFetch(page: Int): List<Ju> {
+
+        return dataSource.subList(10 * (page - 1), 10 * page)
     }
 
     private fun newJu(index: Int): Ju = Ju(index, "标题=>$index")

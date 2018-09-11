@@ -74,12 +74,14 @@ class LoadMoreWrapper(val context: Context, val adapter: RecyclerView.Adapter<Re
         adapter.onViewRecycled(holder)
     }
 
-    fun notifyStatusChanged(newStatus: Status) {
+    fun notifyStatusChanged(status: Status) {
 
-        if (status != newStatus) {
-            status = newStatus
-            notifyDataSetChanged()
-        }
+        if (this.status == status)
+            return
+        else
+            this.status = status
+
+        this.notifyDataSetChanged()
     }
 
     class LoadMoreVH(itemView: View) : RecyclerView.ViewHolder(itemView) {

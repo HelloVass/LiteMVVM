@@ -31,7 +31,7 @@ class MainActivity : AppCompatActivity() {
         // create VM
         vm = obtainVM(JuVM::class.java)
 
-        // init Recyclerview
+        // init RecyclerView
         initRecyclerViewComponent(rcvList)
 
         // init refresh component

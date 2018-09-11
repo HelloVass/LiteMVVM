@@ -4,7 +4,7 @@ interface ILoadMore {
 
     fun onLoadMoreBegin()
 
-    fun onLoadMoreSucceed(hasMoreItems: Boolean)
+    fun onLoadMoreSucceed(hasMore: Boolean)
 
     fun onLoadMoreFailed()
 }

@@ -13,6 +13,7 @@ class LoadMore(private val context: Context,
 
     private var hasMore: Boolean = true
 
+    @Suppress("JoinDeclarationAndAssignment")
     private lateinit var userAdapter: RecyclerView.Adapter<RecyclerView.ViewHolder>
 
     private lateinit var loadMoreWrapper: LoadMoreWrapper
@@ -75,14 +76,19 @@ class LoadMore(private val context: Context,
         loadMoreWrapper.notifyStatusChanged(Status.Loading)
     }
 
-    override fun onLoadMoreSucceed(hasMoreItems: Boolean) {
+    override fun onLoadMoreSucceed(hasMore: Boolean) {
 
         isFailed = false
         isLoading = false
-        hasMore = hasMoreItems
+        this.hasMore = hasMore
 
-        if (!hasMoreItems) {
-            loadMoreWrapper.notifyStatusChanged(Status.NoMore)
+        when {
+            hasMore -> {
+                loadMoreWrapper.notifyStatusChanged(Status.Completed)
+            }
+            else -> {
+                loadMoreWrapper.notifyStatusChanged(Status.NoMore)
+            }
         }
     }
 
