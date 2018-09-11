@@ -44,7 +44,7 @@ class MainActivity : AppCompatActivity() {
         observeVMState(vm)
 
         // 加载第一页
-        vm?.loadData(false)
+        vm?.loadData(true)
     }
 
     private fun initRecyclerViewComponent(recyclerView: RecyclerView) {

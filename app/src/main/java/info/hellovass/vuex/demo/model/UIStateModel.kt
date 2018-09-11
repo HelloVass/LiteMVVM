@@ -17,5 +17,10 @@ data class UIStateModel(val latest: List<Ju>, val diffResult: DiffUtil.DiffResul
     /**
      * 判断是否还有更多数据，如果下一页的 size 小于 10，则没有更多数据
      */
-    fun hasMore(): Boolean = count >= 10
+    fun hasMore(): Boolean = count >= 7
+
+    /**
+     * 数据是否为空
+     */
+    fun isEmpty(): Boolean = latest.count() > 0
 }

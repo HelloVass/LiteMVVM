@@ -15,13 +15,13 @@ class JuRepo {
 
     fun getJus(page: Int): Observable<List<Ju>> {
 
-        return Observable.timer(800, TimeUnit.MILLISECONDS)
+        return Observable.timer(800L, TimeUnit.MILLISECONDS)
                 .map { _ -> mockFetch(page) }
     }
 
     private fun mockFetch(page: Int): List<Ju> {
 
-        return dataSource.subList(10 * (page - 1), 10 * page)
+        return dataSource.subList(7 * (page - 1), 7 * page)
     }
 
     private fun newJu(index: Int): Ju = Ju(index, "标题=>$index")
